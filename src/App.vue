@@ -18,14 +18,14 @@
 <script setup>
 import TaskInput from './components/TaskInput.vue';
 import TaskCard from './components/TaskCard.vue';
-import {ref, onMounted} from 'vue';
+import {ref, onMounted, computed} from 'vue';
 
 // let taskList = ref('');
 
 const taskList = ref([]);
 
 onMounted(() => {
-    if (!localStorage.getItem('data') || localStorage.getItem('data') == []) {
+    if (!localStorage.getItem('data') || JSON.parse(localStorage.getItem('data')) == []) {
         taskList.value = [{
             id: 0,
             title: 'Create Project',
@@ -38,11 +38,15 @@ onMounted(() => {
     taskList.value = JSON.parse(data);
 });
 
-// const computedId = computed(() => taskList.value[taskList.value.length - 1].id + 1);
+const computedId = computed(() => {
+    return taskList.value.length === 0 ? 0 : taskList.value[taskList.value.length - 1].id + 1
+});
 
-function addTask({title, description}) {
+// const refId = ref(computedId);
+
+function addTask({ title, description }) {
     taskList.value.push({
-        id: taskList.value[taskList.value.length - 1].id + 1,
+        id: computedId.value, // taskList.value[taskList.value.length - 1].id + 1
         title,
         description,
         status: false
@@ -52,12 +56,12 @@ function addTask({title, description}) {
 }
 
 function setDoneTask(id) {
-    taskList.value = taskList.value.map(x => {
-        if (x.id === id) {
-            x.status = true;
-            x.description = 'Done!';
+    taskList.value = taskList.value.map(task => {
+        if (task.id === id) {
+            task.status = true;
+            task.description = 'Done!';
         }
-        return x;
+        return task;
     });
     const data = JSON.stringify(taskList.value);
     localStorage.setItem('data', data);
